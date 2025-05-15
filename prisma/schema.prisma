@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique(map: "email_1")
+  password  String
+  admin     Boolean
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt @db.Date
+}
+
+model property {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  values     String
+  createdAt  DateTime  @default(now()) @db.Date
+  updatedAt  DateTime  @updatedAt @db.Date
+  // product    product?  @relation(fields: [productId], references: [id])
+  // productId  String?   @db.ObjectId
+  category   category? @relation(fields: [categoryId], references: [id])
+  categoryId String?   @db.ObjectId
+}
+
+model product {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  images      image[]
+  category    category? @relation(fields: [categoryId], references: [id])
+  properties  Json?
+
+  createdAt  DateTime @default(now()) @db.Date
+  updatedAt  DateTime @updatedAt @db.Date
+  categoryId String?  @db.ObjectId
+}
+
+model order {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  line_items    Json
+  name          String
+  email         String
+  city          String
+  postalCode    String
+  streetAddress String
+  country       String
+  paid          Boolean
+
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt @db.Date
+}
+
+model image {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  imageId    String
+  imageUrl   String
+  uploadedBy String?
+  product    product? @relation(fields: [productId], references: [id])
+  productId  String?  @db.ObjectId
+}
+
+model category {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createdAt  DateTime   @default(now()) @db.Date
+  updatedAt  DateTime   @updatedAt @db.Date
+  parent     category?  @relation("ParentChild", fields: [parentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  children   category[] @relation("ParentChild")
+  parentId   String?    @db.ObjectId
+  product    product[]
+  properties property[]
+}
