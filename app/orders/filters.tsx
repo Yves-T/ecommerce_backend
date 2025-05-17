@@ -75,7 +75,7 @@ const Filters = ({ columFilters, setColumnFilters }: Props) => {
         className="max-w-sm rounded-md border border-gray-300 pr-4 pl-10 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
       />
       <Search
-        className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
+        className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
         size={20}
       />
       <div>
