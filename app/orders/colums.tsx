@@ -1,11 +1,24 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { LineItem, Order } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
 
 export const columns: ColumnDef<Order>[] = [
   {
     accessorKey: "createdAt",
-    header: "Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    sortingFn: "datetime",
     cell: ({ row }) => {
       const createdAt: string = row.getValue("createdAt");
       const orderDate = new Date(createdAt).toLocaleString();
@@ -16,6 +29,17 @@ export const columns: ColumnDef<Order>[] = [
   {
     accessorKey: "paid",
     header: "Paid",
+    id: "paid",
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue) {
+        return true;
+      }
+      if (filterValue === "both") {
+        return true;
+      }
+      const paid: boolean = row.getValue("paid") as boolean;
+      return filterValue === "paid" ? paid : !paid;
+    },
     cell: ({ row }) => {
       const paid: boolean = row.getValue("paid") as boolean;
       return (
@@ -28,6 +52,12 @@ export const columns: ColumnDef<Order>[] = [
   },
   {
     header: "Recipient",
+    id: "recipient",
+    filterFn: (row, columnId, filterValue) => {
+      const order: Order = row.original;
+      const columnData = `${order.name} ${order.email} ${order.city} ${order.postalCode} ${order.country} ${order.streetAddress}`;
+      return columnData.includes(filterValue);
+    },
     cell: ({ row }) => {
       const order: Order = row.original;
 
@@ -43,9 +73,19 @@ export const columns: ColumnDef<Order>[] = [
   },
   {
     header: "Order",
+    id: "order",
     accessorKey: "line_items",
+    filterFn: (row, columnId, filterValue) => {
+      const orders: LineItem[] = row.getValue("order");
+      const searchableData = orders
+        ? orders
+            .map((order) => `${order.price_data.product_data.name}`)
+            .join("")
+        : "";
+      return searchableData.includes(filterValue);
+    },
     cell: ({ row }) => {
-      const orders: LineItem[] = row.getValue("line_items");
+      const orders: LineItem[] = row.getValue("order");
 
       return (
         <ul>
